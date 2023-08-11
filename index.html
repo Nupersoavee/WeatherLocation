@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weather App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .button {
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        #container {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>Weather App</h1>
+        <div>
+            <button class="button" id="celsius">Celsius</button>
+            <button class="button" id="fahrenheit">Fahrenheit</button>
+        </div>
+        <div>
+            <button class="button" id="mph">mph</button>
+            <button class="button" id="mps">m/s</button>
+        </div>
+        <div id="weatherInfo"></div>
+    </div>
+    <script>
+        const apiKey = "YOUR_API_KEY";
+        let unit = "metric"; // Default unit for temperature (Celsius)
+        let windUnit = "metric"; // Default unit for wind speed (m/s)
+
+        function fetchData() {
+            navigator.geolocation.getCurrentPosition(position => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                const url = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude=minutely,daily&units=${unit}&appid=${apiKey}`;
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        const currentTemp = data.current.temp;
+                        const currentPrecipitation = data.current.rain ? data.current.rain["1h"] : 0;
+                        const currentWind = data.current.wind_speed;
+                        const hourlyForecast = data.hourly;
+
+                        const weatherInfo = document.getElementById("weatherInfo");
+                        weatherInfo.innerHTML = `
+                            <p>Temperature: ${currentTemp}°</p>
+                            <p>Precipitation: ${currentPrecipitation} mm</p>
+                            <p>Wind Speed: ${currentWind} ${windUnit === 'metric' ? 'm/s' : 'mph'}</p>
+                            <h2>Hourly Forecast</h2>
+                        `;
+
+                        for (let i = 0; i < 5; i++) { // Display the next 5 hours of hourly forecast
+                            const hourTemp = hourlyForecast[i].temp;
+                            const hourIcon = hourlyForecast[i].weather[0].icon;
+                            const hourTime = new Date(hourlyForecast[i].dt * 1000).toLocaleTimeString();
+
+                            weatherInfo.innerHTML += `
+                                <div>
+                                    <p>${hourTime}</p>
+                                    <p>${hourTemp}°</p>
+                                    <img src="http://openweathermap.org/img/wn/${hourIcon}.png" alt="Weather Icon">
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(error => console.error(error));
+            });
+        }
+
+        document.getElementById("celsius").addEventListener("click", () => {
+            unit = "metric";
+            fetchData();
+        });
+
+        document.getElementById("fahrenheit").addEventListener("click", () => {
+            unit = "imperial";
+            fetchData();
+        });
+
+        document.getElementById("mph").addEventListener("click", () => {
+            windUnit = "imperial";
+            fetchData();
+        });
+
+        document.getElementById("mps").addEventListener("click", () => {
+            windUnit = "metric";
+            fetchData();
+        });
+
+        // Initial fetch
+        fetchData();
+    </script>
+</body>
+</html>

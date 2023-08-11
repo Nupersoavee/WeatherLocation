@@ -1,6 +1,6 @@
 document.getElementById("getWeatherButton").addEventListener("click", function() {
     // You would need to replace 'YOUR_API_KEY' with your actual OpenWeatherMap API key
-    const apiKey = "YOUR_API_KEY";
+    const apiKey = "1f66dd79358380ec43a3317593f2c586";
     
     // Retrieve the user's location (latitude and longitude)
     if (navigator.geolocation) {
